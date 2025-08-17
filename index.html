@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>密码生成器</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #7209b7;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+            --border: #dee2e6;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: var(--light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(25, 25, 35, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+        
+        header {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, #4cc9f0, #4361ee, #7209b7);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #a0aec0;
+            font-size: 1rem;
+        }
+        
+        .main-content {
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .card {
+            background: rgba(30, 30, 40, 0.7);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+        
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+            color: var(--success);
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .card-title svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+        
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #cbd5e0;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(20, 20, 30, 0.5);
+            color: var(--light);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.3);
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border-radius: 50%;
+        }
+        
+        .flex-group {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .flex-group > * {
+            flex: 1;
+        }
+        
+        .password-result {
+            background: rgba(20, 20, 30, 0.7);
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            margin-top: 1rem;
+        }
+        
+        .password-display {
+            flex: 1;
+            font-family: monospace;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .password-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .strength-meter {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .strength-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .tab.active {
+            background: var(--primary);
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .mapping-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+        }
+        
+        .mapping-domain {
+            flex: 1;
+            font-family: monospace;
+        }
+        
+        .mapping-identifier {
+            font-weight: 500;
+            margin: 0 1rem;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .alert-success {
+            background: rgba(76, 201, 240, 0.15);
+            border: 1px solid rgba(76, 201, 240, 0.3);
+        }
+        
+        .alert-warning {
+            background: rgba(255, 193, 7, 0.15);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+        
+        .instructions {
+            margin-top: 2rem;
+            max-width: 800px;
+            background: rgba(25, 25, 35, 0.7);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+        
+        .instructions h2 {
+            margin-bottom: 1rem;
+            color: var(--success);
+        }
+        
+        .instructions ol {
+            padding-left: 1.5rem;
+            line-height: 1.6;
+        }
+        
+        .instructions li {
+            margin-bottom: 0.75rem;
+        }
+        
+        .instructions code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .flex-group {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>密码生成器</h1>
+        <div class="subtitle">根据主密码和网站信息生成唯一密码 - 完全本地运行</div>
+    </header>
+    
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" data-tab="generator">密码生成器</div>
+            <div class="tab" data-tab="settings">设置</div>
+            <div class="tab" data-tab="mapping">网站映射</div>
+        </div>
+        
+        <div class="main-content">
+            <!-- 密码生成器标签页 -->
+            <div class="tab-content active" id="generator-tab">
+                <div class="card">
+                    <div class="card-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M12,15A2,2 0 0,1 14,17A2,2 0 0,1 12,19A2,2 0 0,1 10,17A2,2 0 0,1 12,15M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1Z" />
+                        </svg>
+                        <span>生成您的密码</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="master-password">主密码</label>
+                        <input type="password" id="master-password" placeholder="输入您的主密码" autocomplete="off">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="website-url">当前网站</label>
+                        <input type="text" id="website-url" value="https://www.zhihu.com/login" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="website-identifier">网站标识符</label>
+                        <div class="flex-group">
+                            <input type="text" id="website-identifier" value="zhihu" readonly>
+                            <button id="edit-identifier" class="btn btn-secondary">编辑</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="username">用户名/邮箱</label>
+                        <input type="text" id="username" placeholder="输入您的用户名或邮箱">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password-length">密码长度</label>
+                        <select id="password-length">
+                            <option value="12">12 字符</option>
+                            <option value="14" selected>14 字符</option>
+                            <option value="16">16 字符</option>
+                            <option value="18">18 字符</option>
+                        </select>
+                    </div>
+                    
+                    <button id="generate-btn" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        生成密码
+                    </button>
+                    
+                    <div id="result-container" style="display: none;">
+                        <div class="password-result">
+                            <div class="password-display" id="generated-password"></div>
+                            <div class="password-actions">
+                                <button id="copy-btn" class="btn btn-icon btn-secondary" title="复制密码">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                </button>
+                                <button id="fill-btn" class="btn btn-icon btn-primary" title="填充密码">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="strength-meter">
+                            <div class="strength-fill" id="password-strength"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-success">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    <div>所有操作都在本地执行，您的密码不会离开浏览器</div>
+                </div>
+            </div>
+            
+            <!-- 设置标签页 -->
+            <div class="tab-content" id="settings-tab">
+                <div class="card">
+                    <div class="card-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
+                        </svg>
+                        <span>设置选项</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="auto-fill">自动填充</label>
+                        <select id="auto-fill">
+                            <option value="auto">自动检测密码字段</option>
+                            <option value="manual">手动选择密码字段</option>
+                            <option value="clipboard">复制到剪贴板</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password-complexity">密码复杂度</label>
+                        <select id="password-complexity">
+                            <option value="simple">字母+数字</option>
+                            <option value="medium" selected>字母+数字+基本符号</option>
+                            <option value="high">字母+数字+所有符号</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="session-timeout">会话超时时间</label>
+                        <select id="session-timeout">
+                            <option value="5">5 分钟</option>
+                            <option value="15">15 分钟</option>
+                            <option value="30" selected>30 分钟</option>
+                            <option value="60">1 小时</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn btn-primary">保存设置</button>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <div>请勿在公共计算机上保存您的主密码</div>
+                </div>
+            </div>
+            
+            <!-- 网站映射标签页 -->
+            <div class="tab-content" id="mapping-tab">
+                <div class="card">
+                    <div class="card-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M14.06,9L15,9.94L5.92,19H5V18.08L14.06,9M17.66,3C17.41,3 17.15,3.1 16.96,3.29L15.13,5.12L18.88,8.87L20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18.17,3.09 17.92,3 17.66,3M14.06,6.19L3,17.25V21H6.75L17.81,9.94L14.06,6.19Z" />
+                        </svg>
+                        <span>自定义网站映射</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>添加新映射</label>
+                        <div class="flex-group">
+                            <input type="text" id="new-domain" placeholder="例如: zhihu.com">
+                            <input type="text" id="new-identifier" placeholder="自定义标识符">
+                            <button id="add-mapping" class="btn btn-secondary">添加</button>
+                        </div>
+                    </div>
+                    
+                    <div id="mappings-list">
+                        <div class="mapping-item">
+                            <div class="mapping-domain">zhihu.com</div>
+                            <div class="mapping-identifier">→</div>
+                            <div class="mapping-identifier">zhihu</div>
+                            <button class="btn btn-icon btn-secondary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="mapping-item">
+                            <div class="mapping-domain">weibo.com</div>
+                            <div class="mapping-identifier">→</div>
+                            <div class="mapping-identifier">weibo</div>
+                            <button class="btn btn-icon btn-secondary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="mapping-item">
+                            <div class="mapping-domain">github.com</div>
+                            <div class="mapping-identifier">→</div>
+                            <div class="mapping-identifier">github</div>
+                            <button class="btn btn-icon btn-secondary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <div>自定义映射仅在本设备上保存，不会同步到其他设备</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="instructions">
+        <h2>使用说明</h2>
+        <ol>
+            <li>设置一个强壮的<strong>主密码</strong>（这是唯一需要记住的密码）</li>
+            <li>访问需要登录的网站，插件会自动识别网站域名</li>
+            <li>输入用户名/邮箱（用于区分同一网站的多个账户）</li>
+            <li>点击<strong>生成密码</strong>按钮创建唯一密码</li>
+            <li>使用<strong>复制</strong>或<strong>填充</strong>功能将密码应用到登录表单</li>
+            <li>在<strong>网站映射</strong>中可以自定义特定网站的标识符</li>
+        </ol>
+    </div>
+
+    <script>
+        // 标签页切换
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // 移除所有活动标签
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // 激活当前标签
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+        
+        // 生成密码
+        document.getElementById('generate-btn').addEventListener('click', generatePassword);
+        
+        // 复制密码
+        document.getElementById('copy-btn').addEventListener('click', copyPassword);
+        
+        // 填充密码
+        document.getElementById('fill-btn').addEventListener('click', fillPassword);
+        
+        // 编辑标识符
+        document.getElementById('edit-identifier').addEventListener('click', () => {
+            const identifierInput = document.getElementById('website-identifier');
+            identifierInput.removeAttribute('readonly');
+            identifierInput.focus();
+        });
+        
+        // 添加映射
+        document.getElementById('add-mapping').addEventListener('click', addMapping);
+        
+        // 生成密码函数
+        async function generatePassword() {
+            const masterPassword = document.getElementById('master-password').value;
+            const identifier = document.getElementById('website-identifier').value;
+            const username = document.getElementById('username').value;
+            const length = parseInt(document.getElementById('password-length').value);
+            
+            if (!masterPassword) {
+                alert('请输入主密码');
+                return;
+            }
+            
+            if (!identifier) {
+                alert('请输入网站标识符');
+                return;
+            }
+            
+            // 使用PBKDF2算法生成密码
+            const salt = `fixed_salt_${identifier}_${username}`;
+            const encoder = new TextEncoder();
+            const keyMaterial = await window.crypto.subtle.importKey(
+                'raw',
+                encoder.encode(masterPassword),
+                {name: 'PBKDF2'},
+                false,
+                ['deriveBits']
+            );
+            
+            const derivedBits = await window.crypto.subtle.deriveBits(
+                {
+                    name: 'PBKDF2',
+                    salt: encoder.encode(salt),
+                    iterations: 100000,
+                    hash: 'SHA-256'
+                },
+                keyMaterial,
+                256 // 256位
+            );
+            
+            // 转换为Base64字符串
+            const base64 = btoa(String.fromCharCode(...new Uint8Array(derivedBits)))
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=/g, '');
+            
+            // 取前N个字符作为密码
+            let password = base64.substring(0, length);
+            
+            // 确保密码包含数字和特殊字符
+            password = enhancePassword(password);
+            
+            // 显示密码
+            document.getElementById('generated-password').textContent = password;
+            document.getElementById('result-container').style.display = 'block';
+            
+            // 更新密码强度
+            updatePasswordStrength(password);
+        }
+        
+        // 增强密码复杂度
+        function enhancePassword(password) {
+            // 确保至少有一个数字
+            if (!/\d/.test(password)) {
+                password = password.substring(0, password.length - 1) + '1';
+            }
+            
+            // 确保至少有一个大写字母
+            if (!/[A-Z]/.test(password)) {
+                const randomIndex = Math.floor(Math.random() * password.length);
+                const char = password.charAt(randomIndex).toUpperCase();
+                password = password.substring(0, randomIndex) + char + password.substring(randomIndex + 1);
+            }
+            
+            // 确保至少有一个特殊字符
+            if (!/[^A-Za-z0-9]/.test(password)) {
+                const specialChars = '!@#$%^&*';
+                const randomChar = specialChars[Math.floor(Math.random() * specialChars.length)];
+                const randomIndex = Math.floor(Math.random() * password.length);
+                password = password.substring(0, randomIndex) + randomChar + password.substring(randomIndex + 1);
+            }
+            
+            return password;
+        }
+        
+        // 更新密码强度显示
+        function updatePasswordStrength(password) {
+            let strength = 0;
+            
+            // 长度评分
+            if (password.length >= 12) strength += 25;
+            if (password.length >= 16) strength += 10;
+            
+            // 复杂度评分
+            if (/[a-z]/.test(password)) strength += 10;
+            if (/[A-Z]/.test(password)) strength += 15;
+            if (/\d/.test(password)) strength += 15;
+            if (/[^A-Za-z0-9]/.test(password)) strength += 25;
+            
+            // 避免常见密码模式
+            if (!/(.)\1{2,}/.test(password)) strength += 10;
+            
+            // 限制在0-100之间
+            strength = Math.min(100, Math.max(0, strength));
+            
+            const strengthBar = document.getElementById('password-strength');
+            strengthBar.style.width = `${strength}%`;
+            
+            // 设置颜色
+            if (strength < 40) {
+                strengthBar.style.backgroundColor = '#e53e3e'; // 红色
+            } else if (strength < 70) {
+                strengthBar.style.backgroundColor = '#dd6b20'; // 橙色
+            } else {
+                strengthBar.style.backgroundColor = '#38a169'; // 绿色
+            }
+        }
+        
+        // 复制密码到剪贴板
+        function copyPassword() {
+            const password = document.getElementById('generated-password').textContent;
+            navigator.clipboard.writeText(password).then(() => {
+                alert('密码已复制到剪贴板');
+            });
+        }
+        
+        // 填充密码（模拟功能）
+        function fillPassword() {
+            alert('在浏览器插件中，此功能将自动填充到当前网页的密码字段');
+        }
+        
+        // 添加映射
+        function addMapping() {
+            const domain = document.getElementById('new-domain').value;
+            const identifier = document.getElementById('new-identifier').value;
+            
+            if (!domain || !identifier) {
+                alert('请输入域名和标识符');
+                return;
+            }
+            
+            const mappingList = document.getElementById('mappings-list');
+            const mappingItem = document.createElement('div');
+            mappingItem.className = 'mapping-item';
+            mappingItem.innerHTML = `
+                <div class="mapping-domain">${domain}</div>
+                <div class="mapping-identifier">→</div>
+                <div class="mapping-identifier">${identifier}</div>
+                <button class="btn btn-icon btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                </button>
+            `;
+            
+            mappingList.appendChild(mappingItem);
+            
+            // 清空输入框
+            document.getElementById('new-domain').value = '';
+            document.getElementById('new-identifier').value = '';
+            
+            alert('映射已添加');
+        }
+        
+        // 模拟从当前URL提取域名
+        function extractDomainFromUrl(url) {
+            try {
+                const hostname = new URL(url).hostname;
+                // 移除www前缀和顶级域名
+                return hostname.replace(/^www\./, '')
+                              .split('.')
+                              .slice(0, -1)
+                              .join('_');
+            } catch (e) {
+                return 'website';
+            }
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 模拟当前网站URL
+            const currentUrl = 'https://www.zhihu.com/login';
+            document.getElementById('website-url').value = currentUrl;
+            
+            // 提取域名
+            const domain = extractDomainFromUrl(currentUrl);
+            document.getElementById('website-identifier').value = domain;
+        });
+    </script>
+</body>
+</html>
