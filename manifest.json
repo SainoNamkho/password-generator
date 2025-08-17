@@ -2,7 +2,7 @@
   "name": "密码生成器",
   "short_name": "密码生成器",
   "description": "根据主密码和网站信息生成唯一密码",
-  "start_url": "/",
+  "start_url": "/password-generator",
   "display": "standalone",
   "background_color": "#1a2a6c",
   "theme_color": "#4361ee",
